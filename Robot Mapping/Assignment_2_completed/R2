@@ -1,0 +1,191 @@
+\documentclass{article}
+\usepackage[a4paper,top=3cm,bottom=2cm,left=2cm,right=2cm,marginparwidth=2cm]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{csquotes}
+\usepackage{graphicx}
+\usepackage{authblk}
+\usepackage{fancyhdr}
+\usepackage{subcaption}
+\usepackage{float}
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{Page \thepage}
+\lhead{Sheet-02 Report, \textsc{Robot Mapping}}
+
+\begin{document}
+
+\begin{titlepage}
+
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}} % Defines a new command for the horizontal lines, change thickness here
+
+\center % Center everything on the page
+ 
+%----------------------------------------------------------------------------------------
+%	HEADING SECTIONS
+%----------------------------------------------------------------------------------------
+
+\textsc{\LARGE Faculty of Science and Technology}\\[1.5cm] % Name of your university/college
+\textsc{\Large Norwegian University of Life Sciences}\\[0.5cm] % Major heading such as course name
+\textsc{\large \AA s, Norway}\\[0.5cm] % Minor heading such as course title
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\HRule \\[0.4cm]
+{ \huge \bfseries Assignment 2 - Bayes Filter \\ \textsc{Probabilistic Robotics}}\\[0.4cm] % Title of your document
+\HRule \\[1.5cm]
+ 
+%----------------------------------------------------------------------------------------
+%	AUTHOR SECTION
+%----------------------------------------------------------------------------------------
+\begin{minipage}{0.4\textwidth}
+\begin{flushleft} \large
+\emph{Submitted by:}\\
+Vignesh Raja \textsc{Ponnambalam}$^1$ \\
+Abhishesh \textsc{Pal}$^1$ 
+\end{flushleft}
+\end{minipage}
+~
+\begin{minipage}{0.4\textwidth}
+\begin{flushright} \large
+\emph{Supervisor:} \\
+Jon Glenn Omholt \textsc{Gjevestad}$^2$ \\ % Supervisor's Name
+P\aa l Johan \textsc{From}$^2$
+\end{flushright}
+\end{minipage}\\[2cm]
+
+% If you don't want a supervisor, uncomment the two lines below and remove the section above
+%\Large \emph{Author:}\\
+%John \textsc{Smith}\\[3cm] % Your name
+
+%----------------------------------------------------------------------------------------
+%	DATE SECTION
+%----------------------------------------------------------------------------------------
+
+{\large \today}\\[2cm] % Date, change the \today to a set date if you want to be precise
+
+%----------------------------------------------------------------------------------------
+%	LOGO SECTION
+%----------------------------------------------------------------------------------------
+
+\includegraphics[width=0.7\linewidth]{nmbu.png}\\[1cm] % Include a department/university logo - this will require the graphicx package
+ 
+%----------------------------------------------------------------------------------------
+\vspace{0.5cm}
+\begin{flushleft}
+$^1$PhD Researcher, Norwegian University of Life Sciences\\%
+$^2$Professor, Norwegian University of Life Sciences\\%
+\end{flushleft}
+\vfill % Fill the rest of the page with whitespace
+
+\end{titlepage}
+
+\section{Summary}
+The known probabilities values are
+\begin{equation}
+\begin{aligned}
+P(z = notcolored|x = blank) = 0.8\\
+P(z = colored|x = blank) = 0.2\\
+P(z = notcolored|x = colored) = 0.3\\
+P(z = colored|x = colored) = 0.7
+\end{aligned}
+\end{equation}
+The robot belief is assumed to be 
+\begin{equation}
+\begin{aligned}
+bel(x_0= colored) = 0.5\\
+bel(x_0= notcolored) = 0.5
+\end{aligned}
+\end{equation}
+Now, lets assume that robot paints, then if surface is not yet painted it will be painted. If the surface is already painted then it will not be paint again (or there is no change in current state)
+\begin{equation}
+\begin{aligned}
+P(x_t= notcolored|u_t=paint, x_t-1=colored) = 1\\
+P(x_t= colored|u_t=paint, x_t-1=colored) = 0\\
+P(x_t= colored|u_t=paint, x_t-1=notcolored) = 0.9\\
+P(x_t= notcolored|u_t=paint, x_t-1=notcolored) = 0.1
+\end{aligned}
+\end{equation}
+The robot may also not choose to paint, in that case the state of the world doesnot changes hence the conditional probability would be 
+\begin{equation}
+\begin{aligned}
+P(x_t= colored|u_t=notpaint, x_t-1=colored) = 1\\
+P(x_t= notcolored|u_t=notpaint, x_t-1=colored) = 0\\
+P(x_t= colored|u_t=notpaint, x_t-1=notcolored) = 0\\
+P(x_t= notcolored|u_t=notpaint, x_t-1=notcolored) = 1
+\end{aligned}
+\end{equation}
+Now assume at time t, the robot does not take action to paint but sensor senses the state that is colored. The resulting posterior belief is calculated by bayes filter using prior $bel(x_0)$, the control $u_t = notpaint$ and sensor $z_0 = colored$, hence the 
+%\begin{equation}
+\begin{multline*}
+\overline{bel}(x_1) = P(x_1|u_1= notpaint, x_0=colored)*bel(x_0=colored)+\\
+P(x_1|u_1= notpaint, x_0=notcolored)*bel(x_0=notcolored)
+\end{multline*}
+%\end{equation}
+Now for the time instance lets assume $\overline{bel}(x_1= colored)$ then,
+\begin{equation}
+\begin{split}
+\overline{bel}(x_1=colored) &= P(x_1=colored|u_1= notpaint, x_0=colored)*bel(x_0=colored) + \\
+&P(x_1=colored|u_1= notpaint, x_0=notcolored)*bel(x_0=notcolored)\\
+\overline{bel}(x_1=colored)&= 0*0.5 + 1*0.5 = 0.5
+\end{split}
+\end{equation}
+Now use the sensor observation with the previous belief of the state
+\begin{equation}
+\begin{aligned}
+bel(x_1) = \eta P(z_1=colored|x_1)*\overline{bel}(x_1)\\
+\end{aligned}
+\end{equation}
+There are two cases $x_1 = notcolored$ and $x_1 = colored$
+\begin{equation}
+\begin{split}
+bel(x_1=colored) &=  \eta P(z_1=sensed\_colored|x_1=colored)*\overline{bel}(x_1=colored)\\
+                &= \eta * 0.8*0.5 \\
+                &= \eta * (0.40)
+\end{split}
+\end{equation}                
+and 
+\begin{equation}
+\begin{split}
+bel(x_1=notcolored) &=  \eta P(z_1=sensed\_colored|x_1=notcolored)*\overline{bel}(x_1=notcolored)\\
+                &= \eta * 0.3*0.5 \\
+                &= \eta * (0.15)\\
+\end{split}
+\end{equation}   
+Now we should calculate $\eta$ \\
+\begin{equation}
+\begin{split}
+\eta &= (0.40 + 0.15)^{-1}\\ 
+     &= 1.8
+\end{split}
+\end{equation}
+Hence 
+\begin{equation}
+\begin{aligned}
+bel(x_1=colored) =  1.8 * (0.4) =  0.72 \\
+bel(x_1=notcolored) = 1.8 * (0.15) = 0.27
+\end{aligned}
+\end{equation}          
+For next time step , $u_{2} = push$ and $z_{2} = sense\_colored$
+\begin{equation}
+\begin{aligned} 
+\overline{bel}(x_{2}=colored) =  1*0.72 + 0.9*0.27 =  0.96 \\
+\overline{bel}(x_{2}=notcolored) =  1*0.72 + 0.1*0.27 =  0.027     
+\end{aligned}
+\end{equation}                  
+and
+\begin{equation}
+\begin{aligned} 
+bel(x_{2}=colored) = \eta*(0.8)*(0.96) = \eta * (0.77) \\ 
+bel(x_{2}=notcolored) = \eta*(0.3)*(0.027) = \eta * (0.0081) \\ 
+\eta = (0.77 + 0.0081)^{-1} = 1.28 \\  
+bel(x_{2}=colored) = 0.77*1.28 = 0.98 \\ 
+bel(x_{2}=notcolored) = 1.28 * (0.0081) = 0.01 
+\end{aligned}
+\end{equation}
+At this point, the probability that surface is yet blank though the action is performed is \textbf{0.01}.
+\end{document}
+
